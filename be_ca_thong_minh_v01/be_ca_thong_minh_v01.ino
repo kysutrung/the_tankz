@@ -11,7 +11,7 @@
 //5 code cho sưởi
 
 //Khai báo chân cắm các linh kiện
-
+const int RELAY1 = 23;
 const int SERVO_PIN = 18;
 const int BUTTON_01 = 13; //Nút chuyển chế độ
 const int BUTTON_02 = 12; //Nút điều chỉnh thông số trong chế độ
@@ -75,6 +75,15 @@ void feedTheFishs(){
   myServo.write(180);
   delay(740);
   myServo.write(90);
+}
+
+void heatTheTank(bool u){
+  if(0){
+    digitalWrite(RELAY1, LOW);
+  }
+  else{
+    digitalWrite(RELAY1, HIGH);
+  }
 }
 
 void menuInteraction(){
@@ -153,6 +162,8 @@ void setFeedingTime(){
 void setup(){
   pinMode(BUTTON_01, INPUT_PULLUP);
   pinMode(BUTTON_02, INPUT_PULLUP);
+  pinMode(RELAY1, OUTPUT);
+  digitalWrite(RELAY1, HIGH);
   sensors.begin();
   myServo.attach(SERVO_PIN);
   Wire.begin(21, 22);  // Khởi tạo I2C trên ESP32 (GPIO21 -> SDA, GPIO22 -> SCL)
