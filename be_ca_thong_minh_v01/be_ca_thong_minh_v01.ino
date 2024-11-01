@@ -9,8 +9,8 @@
 //5 code cho sưởi
 
 //Khai báo chân cắm các linh kiện
-const int BUTTON_01 = 34; //Nút chuyển chế độ
-const int BUTTON_02 = 35; //Nút điều chỉnh thông số trong chế độ
+const int BUTTON_01 = 13; //Nút chuyển chế độ
+const int BUTTON_02 = 12; //Nút điều chỉnh thông số trong chế độ
 LiquidCrystal_I2C lcd(0x27, 16, 2); //Nếu không chạy thì thử 0x27 hoặc 0x3F
 
 //Các biến toàn cục
@@ -21,8 +21,9 @@ int FIL_TIME = 6;
 bool IS_FILTER_RUN = 0;
 bool IS_HEATING_RUN = 0;
 int MENU_MODE = 0;
-bool HAVE_ACCESS_THIS_MODE = 0;
-bool STILL_PRESS_BUT_1 = 0;`
+int LAST_MENU_MODE = 0;
+int HAVE_ACCESS_THIS_MODE = 0;
+bool STILL_PRESS_BUT_1 = 0;
 bool STILL_PRESS_BUT_2 = 0;
 
 
@@ -33,6 +34,7 @@ void getButton(){
 
   if (but1State == 0 && STILL_PRESS_BUT_1 == 0){
     MENU_MODE++;
+    HAVE_ACCESS_THIS_MODE = 0;
     STILL_PRESS_BUT_1 = 1;
   }
   if (but1State == 1 && STILL_PRESS_BUT_1 == 1){
@@ -52,6 +54,8 @@ void getButton(){
   if(HAVE_ACCESS_THIS_MODE > 1){
     HAVE_ACCESS_THIS_MODE = 0;
   }
+
+
 }
 
 void menuInteraction(){
@@ -88,8 +92,8 @@ void setMainScreen(){
 
   //Hiển thị khoảng thời gian giữa các lần cho ăn
   lcd.setCursor(12, 1);
-  lcd.print(String(FEED_TIME) + "H")
-  }
+  lcd.print(String(FEED_TIME) + "H");
+  
 }
 
 void setHeatingTime(){
@@ -117,12 +121,15 @@ void setFeedingTime(){
 }
 
 void setup(){
+  pinMode(BUTTON_01, INPUT_PULLUP);
+  pinMode(BUTTON_02, INPUT_PULLUP);
   Wire.begin(21, 22);  // Khởi tạo I2C trên ESP32 (GPIO21 -> SDA, GPIO22 -> SCL)
   lcd.init();
   lcd.backlight();
-
+  Serial.begin(9600);
 }
 
 void loop(){
-
+  getButton();
+  Serial.println(String(MENU_MODE) + " " + String(HAVE_ACCESS_THIS_MODE));
 }
