@@ -4,12 +4,6 @@
 #include <DallasTemperature.h>
 #include <ESP32Servo.h>
 
-//Cần làm gì tiếp
-//1 Code đọc nhiệt độ từ cảm biến nước 
-//2 Code điều bật tắt relay lọc nước
-//4 Code cho servo sg90
-//5 code cho sưởi
-
 //Khai báo chân cắm các linh kiện
 const int RELAY1 = 23;
 const int SERVO_PIN = 18;
@@ -19,7 +13,6 @@ const int ONE_WIRE_BUS = 2; //Chân tín hiệu của cảm biến nhiệt độ
 OneWire oneWire(ONE_WIRE_BUS);
 Servo myServo;
 DallasTemperature sensors(&oneWire);
-
 LiquidCrystal_I2C lcd(0x27, 16, 2); //Nếu không chạy thì thử 0x27 hoặc 0x3F
 
 //Các biến toàn cục
@@ -27,6 +20,7 @@ int SET_WATER_TEMP = 25;
 int WATER_TEMP = 0;
 int FEED_TIME = 12;
 int FIL_TIME = 6;
+int FIL_IN_TIME = 4;
 bool IS_FILTER_RUN = 0;
 bool IS_HEATING_RUN = 0;
 int MENU_MODE = 0;
