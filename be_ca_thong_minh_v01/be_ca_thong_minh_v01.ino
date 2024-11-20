@@ -21,11 +21,11 @@ int SET_WATER_TEMP = 0;
 int LAST_SET_WATER_TEMP = 999;
 int WATER_TEMP = 0;
 int LAST_WATER_TEMP = 999;
-int FEED_TIME = 12;
+int FEED_TIME = 10;
 int LAST_FEED_TIME = 999;
 int FIL_TIME = 1;
 int LAST_FIL_TIME = 999;
-int FIL_IN_TIME = 30;
+int FIL_IN_TIME = 5;
 bool IS_FILTER_RUN = 0;
 bool IS_HEATING_RUN = 0;
 int MENU_MODE = 0;
@@ -33,8 +33,7 @@ int HAVE_ACCESS_THIS_MODE = 0;
 bool STILL_PRESS_BUT_1 = 0;
 bool STILL_PRESS_BUT_2 = 0;
 long int RUN_TIME = 0;
-long int FIL_RUNTIME = 0;
-long int FEED_RUN_TIME = 0;
+int COUNTER = 0;
 
 //Khai báo các hàm
 
@@ -60,15 +59,15 @@ void menuInteraction(){
 
     if(MENU_MODE == 2 && HAVE_ACCESS_THIS_MODE == 1){
       FIL_TIME++;
-      if(FIL_TIME > 24){
+      if(FIL_TIME > 1){
         FIL_TIME = 0;
       }
     }
 
     if(MENU_MODE == 3 && HAVE_ACCESS_THIS_MODE == 1){
-      FEED_TIME += 6;
-      if(FEED_TIME > 48){
-        FEED_TIME = 6;
+      FEED_TIME += 5;
+      if(FEED_TIME > 95){
+        FEED_TIME = 5;
       }
     }
 
@@ -111,12 +110,12 @@ void menuInteraction(){
 
 void resetRunTime(){
   RUN_TIME = 0;
-  FIL_RUNTIME = 0;
-  FEED_RUN_TIME = 0;
+  COUNTER = 0;
 }
 
 void setMainScreen(){
   getWaterTemp();
+  wholeSystemLogic();
 
   lcd.clear();
   lcd.setCursor(0, 0);  // Cột + dòng
@@ -124,7 +123,12 @@ void setMainScreen(){
 
   //Hiển thị nhiệt độ nước
   lcd.setCursor(0, 1);
-  lcd.print(String(WATER_TEMP));
+  if(WATER_TEMP < -50){
+    lcd.print("E");
+  }
+  else{
+    lcd.print(String(WATER_TEMP));
+  }
 
   //Hiển thị trạng thái lọc nước
   lcd.setCursor(4, 1);
@@ -146,11 +150,14 @@ void setMainScreen(){
 
   //Hiển thị khoảng thời gian giữa các lần cho ăn
   lcd.setCursor(12, 1);
-  lcd.print(String(FEED_TIME) + "H");
-  
+  lcd.print(String(FEED_TIME) + "S");
+  COUNTER--;
+  if(COUNTER < 0){
+    COUNTER = FEED_TIME;
+  }
+
   RUN_TIME ++;
-  FEED_RUN_TIME ++;
-  FIL_RUNTIME ++;
+  delay(1000);
 }
 
 void setHeating(){
@@ -171,7 +178,15 @@ void setFilterTime(){
     lcd.setCursor(0, 0);  // Cột + dòng
     lcd.print("Filter Setup:");
     lcd.setCursor(0, 1);
-    lcd.print("Every " + String(FIL_TIME) + "H");
+    if(FIL_TIME > 0){
+      lcd.print("ON");
+      IS_FILTER_RUN = 1;
+    }
+    else{
+      lcd.print("OFF");
+      IS_FILTER_RUN = 0;
+    }
+
     LAST_FIL_TIME = FIL_TIME;
     RUN_TIME++;
   }
@@ -183,7 +198,7 @@ void setFeedingTime(){
     lcd.setCursor(0, 0);  // Cột + dòng
     lcd.print("Feeding Setup:");
     lcd.setCursor(0, 1);
-    lcd.print("Every " + String(FEED_TIME) + "H");
+    lcd.print("Every " + String(FEED_TIME) + "S");
     LAST_FEED_TIME = FEED_TIME;
     RUN_TIME++;
   }
@@ -192,13 +207,14 @@ void setFeedingTime(){
 void getWaterTemp(){
   sensors.requestTemperatures(); 
   WATER_TEMP = sensors.getTempCByIndex(0);
-  delay(500);
 }
 
 void feedTheFishs(){
   myServo.write(180);
   delay(740);
   myServo.write(90);
+  delay(260);
+  RUN_TIME++;
 }
 
 void waterFilter(bool u){
@@ -224,31 +240,25 @@ void heatTheWater(bool y){
 }
 
 void wholeSystemLogic(){
-  if(SET_WATER_TEMP > WATER_TEMP){
-    heatTheWater(1);
-  }
-  else{
-    heatTheWater(0);
-  }
-
-  if(FIL_TIME > 0){
-    waterFilter(0);
-
-    if(FIL_RUNTIME == FIL_TIME * 7200){
-      waterFilter(1);
+  if(SET_WATER_TEMP > 0){
+    if(SET_WATER_TEMP > WATER_TEMP){
+      heatTheWater(1);
     }
-    if(FIL_RUNTIME == FIL_TIME * 7200 + FIL_IN_TIME){
-      waterFilter(0);
-      FIL_RUNTIME = 0;
+    else{
+      heatTheWater(0);
     }
   }
-  else{
+
+  if(IS_FILTER_RUN){
     waterFilter(1);
   }
+  else{
+    waterFilter(0);
+  }
 
-  if(FEED_RUN_TIME == FEED_TIME * 7200){
+  if(RUN_TIME == FEED_TIME){
+    resetRunTime();
     feedTheFishs();
-    FEED_RUN_TIME = 0;
   }
 
   if(RUN_TIME > 1000000){
@@ -271,6 +281,7 @@ void setup(){
 
   waterFilter(0);
   heatTheWater(0);
+  feedTheFishs();
 }
 
 void loop(){
