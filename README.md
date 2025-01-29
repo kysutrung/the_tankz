@@ -1,3 +1,5 @@
+![Photo01](https://github.com/kysutrung/the_tankz/blob/main/medai/repo_cov2er.jpg)
+
 # THE TANKZ - Smart Aquarium Controller using Arduino
 
 ## Introduction
